@@ -1,0 +1,74 @@
+uniform float4x4 ViewProj;
+uniform texture2d image;
+
+uniform float4 shadow_color;
+uniform float2 uv_offset;
+
+uniform float2 uv_mul_val;
+uniform float2 uv_add_val;
+uniform bool hide_image;
+uniform bool hide_shadow;
+
+sampler_state textureSampler {
+	Filter    = Linear;
+	AddressU  = Border;
+	AddressV  = Border;
+	BorderColor = 00000000;
+};
+
+struct VertDataIn {
+	float4 pos : POSITION;
+	float2 uv  : TEXCOORD0;
+};
+
+struct VertDataOut {
+	float4 pos : POSITION;
+	float2 uv  : TEXCOORD0;
+    float2 shadow_uv : TEXCOORD1;
+};
+
+VertDataOut VSDefault(VertDataIn v_in)
+{
+	VertDataOut vert_out;
+	vert_out.pos = mul(float4(v_in.pos.xyz, 1.0), ViewProj);
+	vert_out.uv  = v_in.uv * uv_mul_val + uv_add_val;
+    vert_out.shadow_uv = v_in.uv - uv_offset;
+	return vert_out;
+}
+
+float4 PassThrough(VertDataOut v_in) : TARGET
+{
+    float4 rgba;
+    if(hide_image)
+    {
+        rgba = float4(0.0, 0.0, 0.0, 0.0);
+    }
+    else
+    {
+        rgba = image.Sample(textureSampler, v_in.uv);
+    }
+    
+    float4 shadow_rgba;
+    if(hide_shadow)
+    {
+        shadow_rgba = float4(0.0, 0.0, 0.0, 0.0);
+    }
+    else
+    {
+        float4 off_rgba = image.Sample(textureSampler, v_in.uv - uv_offset);
+        shadow_rgba = shadow_color;
+        shadow_rgba.a *= off_rgba.a;
+    }
+    
+    
+    return (rgba.a * rgba) + ((1.0 - rgba.a) * shadow_rgba);
+}
+
+technique Draw
+{
+	pass
+	{
+		vertex_shader = VSDefault(v_in);
+		pixel_shader  = PassThrough(v_in);
+	}
+}
