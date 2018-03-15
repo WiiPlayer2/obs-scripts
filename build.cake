@@ -40,22 +40,23 @@ Task("Pack")
     var now = DateTime.UtcNow;
     var secondsToday = (long)now.TimeOfDay.TotalSeconds;
     var daysSince2000 = (long)(now - new DateTime(2000, 01, 01, 00, 00, 00, DateTimeKind.Utc)).TotalDays;
-    
+
     var settings = new ChocolateyPackSettings {
         Id                       = "obs-studio-wiiplayer2-scripts",
         Title                    = "DarkLink's Scripts for OBS Studio",
-        Version                  = $"0.0.{daysSince2000}.{secondsToday}",
+        Version                  = $"0.1.{daysSince2000}.{secondsToday}",
         Authors                  = new[] { "WiiPlayer2" },
         Owners                   = new[] { "WiiPlayer2" },
         Summary                  = "DarkLink's Scripts for OBS Studio",
-        Description              = "DarkLink's Scripts for OBS Studio",
+        Description              = System.IO.File.ReadAllText("./README.md"),
         ProjectUrl               = new Uri("https://github.com/WiiPlayer2/obs-scripts"),
         PackageSourceUrl         = new Uri("https://github.com/WiiPlayer2/obs-scripts"),
         ProjectSourceUrl         = new Uri("https://github.com/WiiPlayer2/obs-scripts"),
         DocsUrl                  = new Uri("https://github.com/WiiPlayer2/obs-scripts"),
         MailingListUrl           = new Uri("https://github.com/WiiPlayer2/obs-scripts"),
         BugTrackerUrl            = new Uri("https://github.com/WiiPlayer2/obs-scripts"),
-        Tags                     = new[] { "obs", "scripts", "filter" },
+        ReleaseNotes             = new [] { "https://github.com/WiiPlayer2/obs-scripts/releases" },
+        Tags                     = new [] { "obs", "scripts", "filter" },
         Copyright                = $"WiiPlayer2 / DarkLink (c) {now.Year}",
         LicenseUrl               = new Uri("https://github.com/WiiPlayer2/obs-scripts/blob/master/LICENSE"),
         RequireLicenseAcceptance = false,
@@ -70,6 +71,8 @@ Task("Pack")
             new ChocolateyNuSpecDependency { Id = "obs-studio" },
         },
         Files = new [] {
+            new ChocolateyNuSpecContent { Source = "LICENSE*", Target = "tools" },
+            new ChocolateyNuSpecContent { Source = "cake/choco/VERIFICATION.txt", Target = "tools" },
             new ChocolateyNuSpecContent { Source = "cake/choco/chocolateyInstall.ps1", Target = "tools" },
             new ChocolateyNuSpecContent { Source = "build/scripts.zip", Target = "data" },
         },

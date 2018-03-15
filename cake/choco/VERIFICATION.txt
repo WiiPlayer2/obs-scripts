@@ -1,0 +1,1 @@
+This package is published by myself, WiiPlayer2 / DarkLink (https://github.com/WiiPlayer2). The binary (scripts.zip) is the packed content of the src folder of the source code repository (https://github.com/WiiPlayer2/obs-scripts).
