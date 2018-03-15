@@ -22,7 +22,6 @@ if($scriptsDirectory -eq $null)
 {
     $scriptsDirectory = Get-Item (Join-Path $pkgDir 'data/scripts')
 }
-$obsAppData = Join-Path $env:APPDATA 'obs-studio/'
 
 $scriptFiles = Get-ChildItem $scriptsDirectory.FullName -File
 
