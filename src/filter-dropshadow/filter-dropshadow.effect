@@ -10,30 +10,30 @@ uniform bool hide_image;
 uniform bool hide_shadow;
 
 sampler_state textureSampler {
-	Filter    = Linear;
-	AddressU  = Border;
-	AddressV  = Border;
-	BorderColor = 00000000;
+    Filter    = Linear;
+    AddressU  = Border;
+    AddressV  = Border;
+    BorderColor = 00000000;
 };
 
 struct VertDataIn {
-	float4 pos : POSITION;
-	float2 uv  : TEXCOORD0;
+    float4 pos : POSITION;
+    float2 uv  : TEXCOORD0;
 };
 
 struct VertDataOut {
-	float4 pos : POSITION;
-	float2 uv  : TEXCOORD0;
+    float4 pos : POSITION;
+    float2 uv  : TEXCOORD0;
     float2 shadow_uv : TEXCOORD1;
 };
 
 VertDataOut VSDefault(VertDataIn v_in)
 {
-	VertDataOut vert_out;
-	vert_out.pos = mul(float4(v_in.pos.xyz, 1.0), ViewProj);
-	vert_out.uv  = v_in.uv * uv_mul_val + uv_add_val;
+    VertDataOut vert_out;
+    vert_out.pos = mul(float4(v_in.pos.xyz, 1.0), ViewProj);
+    vert_out.uv  = v_in.uv * uv_mul_val + uv_add_val;
     vert_out.shadow_uv = v_in.uv - uv_offset;
-	return vert_out;
+    return vert_out;
 }
 
 float4 PassThrough(VertDataOut v_in) : TARGET
@@ -66,9 +66,9 @@ float4 PassThrough(VertDataOut v_in) : TARGET
 
 technique Draw
 {
-	pass
-	{
-		vertex_shader = VSDefault(v_in);
-		pixel_shader  = PassThrough(v_in);
-	}
+    pass
+    {
+        vertex_shader = VSDefault(v_in);
+        pixel_shader  = PassThrough(v_in);
+    }
 }
