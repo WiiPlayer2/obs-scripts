@@ -1,0 +1,102 @@
+uniform float4x4 ViewProj;
+uniform texture2d image;
+
+uniform texture2d mask;
+uniform bool use_mask;
+uniform bool invert_mask;
+
+uniform float2 pixel_size;
+
+uniform float4 kernel0;
+uniform float4 kernel1;
+uniform float4 kernel2;
+uniform float4 kernel3;
+uniform int kernel_size;
+
+sampler_state textureSampler {
+    Filter    = Linear;
+    AddressU  = Border;
+    AddressV  = Border;
+    BorderColor = 00000000;
+};
+
+struct VertDataIn {
+    float4 pos : POSITION;
+    float2 uv  : TEXCOORD0;
+};
+
+struct VertDataOut {
+    float4 pos : POSITION;
+    float2 uv  : TEXCOORD0;
+};
+
+VertDataOut VSDefault(VertDataIn v_in)
+{
+    VertDataOut vert_out;
+    vert_out.pos = mul(float4(v_in.pos.xyz, 1.0), ViewProj);
+    vert_out.uv  = v_in.uv;
+    return vert_out;
+}
+
+float get_kernel(int x)
+{
+    int abs_x = abs(x);
+    if(abs_x >= kernel_size)
+        return 0.0;
+
+    int mod_x = abs_x % 4;
+    switch(abs_x / 4)
+    {
+        case 0:
+            return kernel0[mod_x];
+        case 1:
+            return kernel1[mod_x];
+        case 2:
+            return kernel2[mod_x];
+        case 3:
+            return kernel3[mod_x];
+    }
+    return 0.0;
+}
+
+float get_kernel_2D(int x, int y)
+{
+    return get_kernel(x) * get_kernel(y);
+}
+
+float2 translate_pixel(float2 uv, int x, int y)
+{
+    return uv + float2(x * pixel_size.x, y * pixel_size.y);
+}
+
+float4 PassThrough(VertDataOut v_in) : TARGET
+{
+    float4 rgba = float4(0.0, 0.0, 0.0, 0.0);
+    for(int x = 1 - kernel_size; x < kernel_size; x++)
+    {
+        for(int y = 1 - kernel_size; y < kernel_size; y++)
+        {
+            rgba += get_kernel_2D(x, y) * image.Sample(textureSampler, translate_pixel(v_in.uv, x, y));
+        }
+    }
+    if(use_mask)
+    {
+        float4 original_color = image.Sample(textureSampler, v_in.uv);
+        float mask_alpha = mask.Sample(textureSampler, v_in.uv).a;
+        
+        if(invert_mask)
+            mask_alpha = 1 - mask_alpha;
+
+        rgba = rgba * mask_alpha + original_color * (1 - mask_alpha);
+    }
+    return rgba;
+}
+
+technique Draw
+{
+    pass
+    {
+        vertex_shader = VSDefault(v_in);
+        pixel_shader  = PassThrough(v_in);
+    }
+}
