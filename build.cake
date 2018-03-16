@@ -31,7 +31,11 @@ Task("Clean")
 Task("Zip")
 .IsDependentOn("Clean")
 .Does(() => {
+    CopyFile("./LICENSE", "./src/LICENSE.txt");
+    CopyFile("./README.md", "./src/README.md");
     Zip("./src", "./build/scripts.zip");
+    DeleteFile("./src/LICENSE.txt");
+    DeleteFile("./src/README.md");
 });
 
 Task("Pack")
@@ -40,11 +44,12 @@ Task("Pack")
     var now = DateTime.UtcNow;
     var secondsToday = (long)now.TimeOfDay.TotalSeconds;
     var daysSince2000 = (long)(now - new DateTime(2000, 01, 01, 00, 00, 00, DateTimeKind.Utc)).TotalDays;
+    var versionStr = $"0.1.{daysSince2000}.{secondsToday}";
 
     var settings = new ChocolateyPackSettings {
         Id                       = "obs-studio-wiiplayer2-scripts",
         Title                    = "DarkLink's Scripts for OBS Studio",
-        Version                  = $"0.1.{daysSince2000}.{secondsToday}",
+        Version                  = versionStr,
         Authors                  = new[] { "WiiPlayer2" },
         Owners                   = new[] { "WiiPlayer2" },
         Summary                  = "DarkLink's Scripts for OBS Studio",
@@ -79,6 +84,8 @@ Task("Pack")
         OutputDirectory = "./build",
     };
     ChocolateyPack(settings);
+
+    System.IO.File.WriteAllText("./build/version.txt", versionStr);
 });
 
 Task("Publish")
