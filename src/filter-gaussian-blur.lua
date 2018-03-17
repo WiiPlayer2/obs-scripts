@@ -9,12 +9,14 @@ SETTING_SIGMA = 'sigma'
 SETTING_USE_MASK = 'use_mask'
 SETTING_INVERT_MASK = 'invert_mask'
 SETTING_MASK_IMAGE = 'mask_image'
+SETTING_PIXEL_SKIP = 'pixel_skip'
 
 TEXT_KERNEL_SIZE = 'Kernel Size'
 TEXT_SIGMA = 'Sigma'
 TEXT_USE_MASK = 'Use Blur Mask'
 TEXT_INVERT_MASK = 'Invert Blur Mask'
 TEXT_MASK = 'Blur Mask Image (Alpha)'
+TEXT_PIXEL_SKIP = 'Pixel Skip Factor'
 
 IMAGE_FILTER = 'Images (*.bmp *.jpg *.jpeg *.tga *.gif *.png);; All Files (*.*)'
 
@@ -43,8 +45,14 @@ function set_render_size(filter)
 
     filter.render_width = width
     filter.render_height = height
-    filter.pixel_size.x = 1.0 / width
-    filter.pixel_size.y = 1.0 / height
+    if width == 0 then
+        width = 1
+    end
+    if height == 0 then
+        height = 1
+    end
+    filter.pixel_size.x = filter.pixel_skip / width
+    filter.pixel_size.y = filter.pixel_skip / height
 end
 
 source_def.get_name = function()
@@ -65,6 +73,7 @@ source_def.update = function(filter, settings)
     filter.sigma = obs.obs_data_get_double(settings, SETTING_SIGMA)
     filter.use_mask = obs.obs_data_get_bool(settings, SETTING_USE_MASK)
     filter.invert_mask = obs.obs_data_get_bool(settings, SETTING_INVERT_MASK)
+    filter.pixel_skip = obs.obs_data_get_int(settings, SETTING_PIXEL_SKIP)
     local mask_image_path = obs.obs_data_get_string(settings, SETTING_MASK_IMAGE)
 
     local kernel = {}
@@ -103,6 +112,8 @@ source_def.update = function(filter, settings)
             print("failed to load texture " .. mask_image_path);
         end
     end
+
+    set_render_size(filter)
 end
 
 source_def.create = function(settings, source)
@@ -114,6 +125,7 @@ source_def.create = function(settings, source)
     filter.mask_image = obs.gs_image_file()
 
     filter.pixel_size = obs.vec2()
+    filter.pixel_skip = 1
 
     filter.kernel_size = 4
     filter.kernel0 = obs.vec4()
@@ -182,6 +194,7 @@ source_def.get_properties = function(settings)
 
     obs.obs_properties_add_int_slider(props, SETTING_KERNEL_SIZE, TEXT_KERNEL_SIZE, 1, MAX_KERNEL_SIZE * 2 - 1, 2)
     obs.obs_properties_add_float_slider(props, SETTING_SIGMA, TEXT_SIGMA, 1.0, MAX_SIGMA, 0.01)
+    obs.obs_properties_add_int_slider(props, SETTING_PIXEL_SKIP, TEXT_PIXEL_SKIP, 1, 128, 1)
     obs.obs_properties_add_bool(props, SETTING_USE_MASK, TEXT_USE_MASK)
     obs.obs_properties_add_bool(props, SETTING_INVERT_MASK, TEXT_INVERT_MASK)
     obs.obs_properties_add_path(props, SETTING_MASK_IMAGE, TEXT_MASK_IMAGE, obs.OBS_PATH_FILE, IMAGE_FILTER, nil)
@@ -194,6 +207,7 @@ source_def.get_defaults = function(settings)
     obs.obs_data_set_default_double(settings, SETTING_SIGMA, 1.0)
     obs.obs_data_set_default_bool(settings, SETTING_USE_MASK, false)
     obs.obs_data_set_default_bool(settings, SETTING_INVERT_MASK, false)
+    obs.obs_data_set_default_int(settings, SETTING_PIXEL_SKIP, 1)
 end
 
 source_def.video_tick = function(filter, seconds)
