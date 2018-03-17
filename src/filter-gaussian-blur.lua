@@ -89,7 +89,6 @@ source_def.update = function(filter, settings)
     local norm = 1.0 / sum
     for i = 1, MAX_KERNEL_SIZE do
         kernel[i] = kernel[i] * norm
-        print(kernel[i])
     end
 
     obs.vec4_set(filter.kernel0, kernel[1], kernel[2], kernel[3], kernel[4])
