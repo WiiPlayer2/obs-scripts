@@ -15,9 +15,8 @@ uniform int kernel_size;
 
 sampler_state textureSampler {
     Filter    = Linear;
-    AddressU  = Border;
-    AddressV  = Border;
-    BorderColor = 00000000;
+    AddressU  = Clamp;
+    AddressV  = Clamp;
 };
 
 struct VertDataIn {
