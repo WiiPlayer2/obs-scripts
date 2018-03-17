@@ -14,8 +14,11 @@ source_def.id = 'filter-custom'
 source_def.type = obs.OBS_SOURCE_TYPE_FILTER
 source_def.output_flags = bit.bor(obs.OBS_SOURCE_VIDEO)
 
-function get_random()
-    return 'tmp'
+function set_param(effect, name, value, func)
+    local param = obs.gs_effect_get_param_by_name(effect, name)
+    if param ~= nil then
+        func(param, value)
+    end
 end
 
 function read_file(path)
@@ -31,16 +34,21 @@ end
 
 function reload_filter(filter)
     obs.obs_enter_graphics()
+
     if filter.effect ~= nil then
         print('destroying filter ' .. tostring(filter.effect))
         obs.gs_effect_destroy(filter.effect)
     end
+
     filter.effect = obs.gs_effect_create(read_file(filter.effect_path), nil, nil)
+
     if filter.effect == nil then
         print('failed to load effect ' .. filter.effect_path)
     else
+        filter.params.pixel_size = obs.gs_effect_get_param_by_name(filter.effect, 'pixel_size')
         print('loaded effect ' .. filter.effect_path .. ' (' .. tostring(filter.effect) .. ')')
     end
+
     obs.obs_leave_graphics()
 end
 
@@ -64,10 +72,13 @@ end
 
 source_def.create = function(settings, source)
     filter = {}
+    filter.params = {}
     filter.context = source
     filter.width = 0
     filter.height = 0
     filter.effect_path = ''
+
+    filter.pixel_size = obs.vec2()
 
     obs.obs_enter_graphics()
     filter.fallback_effect = obs.gs_effect_create_from_file(script_path() .. 'filter-custom/filter-custom-fallback.effect', nil)
@@ -94,6 +105,7 @@ source_def.video_render = function(filter, effect)
 
     if effect ~= nil then
         obs.obs_source_process_filter_begin(filter.context, obs.GS_RGBA, obs.OBS_NO_DIRECT_RENDERING)
+        set_param(effect, 'pixel_size', filter.pixel_size, obs.gs_effect_set_vec2)
         obs.obs_source_process_filter_end(filter.context, effect, filter.width, filter.height)
     end
 end
@@ -121,6 +133,10 @@ source_def.video_tick = function(filter, seconds)
 
     filter.width = width
     filter.height = height
+    width = width == 0 and 1 or width
+    height = height == 0 and 1 or height
+    filter.pixel_size.x = 1.0 / width
+    filter.pixel_size.y = 1.0 / height
 end
 
 obs.obs_register_source(source_def)
