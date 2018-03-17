@@ -21,7 +21,7 @@ TEXT_PIXEL_SKIP = 'Pixel Skip Factor'
 IMAGE_FILTER = 'Images (*.bmp *.jpg *.jpeg *.tga *.gif *.png);; All Files (*.*)'
 
 source_def = {}
-source_def.id = 'filter_gaussian_blur'
+source_def.id = 'filter-gaussian-blur'
 source_def.type = obs.OBS_SOURCE_TYPE_FILTER
 source_def.output_flags = bit.bor(obs.OBS_SOURCE_VIDEO)
 

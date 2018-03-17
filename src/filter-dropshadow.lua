@@ -14,7 +14,7 @@ TEXT_HIDE_IMAGE = 'Hide Image'
 TEXT_HIDE_SHADOW = 'Hide Shadow'
 
 source_def = {}
-source_def.id = "filter_dropshadow"
+source_def.id = "filter-dropshadow"
 source_def.type = obs.OBS_SOURCE_TYPE_FILTER
 source_def.output_flags = bit.bor(obs.OBS_SOURCE_VIDEO)
 
