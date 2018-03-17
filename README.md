@@ -12,3 +12,6 @@ This script adds an effect filter that adds a hard drop shadow to any source it'
 
 ## filter-gaussian-blur.lua
 This script adds an effect filter that blurs a source with a gaussian blur filter.
+
+## filter-custom.lua
+This script adds a custom effect filter where you can select an effect file yourself.
