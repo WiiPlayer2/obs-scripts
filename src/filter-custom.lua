@@ -24,7 +24,7 @@ end
 function read_file(path)
     local f, err = io.open(path)
     if f == nil then
-        print(err)
+        print('failed to open file: ' .. err)
         return ''
     end
     local content = f:read('*a')
@@ -85,7 +85,6 @@ source_def.create = function(settings, source)
     obs.obs_leave_graphics()
 
     source_def.update(filter, settings)
-
     return filter
 end
 
