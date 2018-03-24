@@ -1,0 +1,70 @@
+uniform float4x4 ViewProj;
+uniform texture2d image;
+
+uniform float2 pixel_size;
+uniform float threshold;
+uniform float4 edge_color;
+
+sampler_state textureSampler {
+    Filter    = Linear;
+    AddressU  = Clamp;
+    AddressV  = Clamp;
+};
+
+struct VertDataIn {
+    float4 pos : POSITION;
+    float2 uv  : TEXCOORD0;
+};
+
+struct VertDataOut {
+    float4 pos : POSITION;
+    float2 uv  : TEXCOORD0;
+};
+
+VertDataOut VSDefault(VertDataIn v_in)
+{
+    VertDataOut vert_out;
+    vert_out.pos = mul(float4(v_in.pos.xyz, 1.0), ViewProj);
+    vert_out.uv  = v_in.uv;
+    return vert_out;
+}
+
+float4 diff(float2 uv, float2 diff)
+{
+    float4 col1 = image.Sample(textureSampler, uv - diff);
+    float4 col2 = image.Sample(textureSampler, uv + diff);
+    //return col1;
+    return col2 - col1;
+}
+
+float4 cover(float4 below, float4 color)
+{
+    return below * (1 - color.a) + color * color.a;
+}
+
+float4 PassThrough(VertDataOut v_in) : TARGET
+{
+    float4 dx = diff(v_in.uv, float2(pixel_size.x / 2, 0));
+    float4 dy = diff(v_in.uv, float2(0, pixel_size.y / 2));
+
+    float intensity = sqrt(length(dx) + length(dy));
+
+    //intensity *= intensity;
+    if(intensity < threshold)
+        intensity = 0;
+    else
+        intensity = 1;
+
+    //return float4(1, 1, 1, 1) * intensity;
+    //return intensity * image.Sample(textureSampler, v_in.uv);
+    return cover(image.Sample(textureSampler, v_in.uv), edge_color * intensity);
+}
+
+technique Draw
+{
+    pass
+    {
+        vertex_shader = VSDefault(v_in);
+        pixel_shader  = PassThrough(v_in);
+    }
+}
