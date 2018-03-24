@@ -15,3 +15,9 @@ This script adds an effect filter that blurs a source with a gaussian blur filte
 
 ## filter-custom.lua
 This script adds a custom effect filter where you can select an effect file yourself.
+
+## filter-toon.lua
+This script adds an effect filter that adds a toon effect.
+
+## filter-edges.lua
+This script adds an effect filter that adds an outline effect.
