@@ -3,7 +3,6 @@
 ///////////////////////////////////////////////////////////////////////////////
 
 var target = Argument("target", "Pack");
-var configuration = Argument("configuration", "Release");
 
 ///////////////////////////////////////////////////////////////////////////////
 // SETUP / TEARDOWN
@@ -11,12 +10,12 @@ var configuration = Argument("configuration", "Release");
 
 Setup(ctx =>
 {
-   CreateDirectory("./build");
+    EnsureDirectoryExists("./build");
 });
 
 Teardown(ctx =>
 {
-   Information("Finished running tasks.");
+    Information("Finished running tasks.");
 });
 
 ///////////////////////////////////////////////////////////////////////////////
